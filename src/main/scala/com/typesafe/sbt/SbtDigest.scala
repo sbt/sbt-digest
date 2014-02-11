@@ -16,7 +16,7 @@ object SbtDigest extends Plugin {
   import DigestKeys._
 
   lazy val digestSettings: Seq[Setting[_]] = Seq(
-    algorithms := Seq("md5", "sha1"),
+    algorithms := Seq("md5"),
     includeFilter in addChecksums := AllPassFilter,
     excludeFilter in addChecksums := HiddenFileFilter,
     addChecksums <<= addChecksumFiles,

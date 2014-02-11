@@ -34,12 +34,12 @@ Configuration
 
 ### Algorithms
 
-Supported hash algorithms are `md5` and `sha1`. The default is to create
-checksum files with both algorithms. To configure this, modify the `algorithms`
-setting. For example, to only create `md5` checksum files:
+Supported hash algorithms are `md5` and `sha1`. The default is to only create
+`md5` checksum files. To configure this, modify the `algorithms`
+setting. For example, to also generate`sha1` checksum files:
 
 ```scala
-DigestKeys.algorithms := Seq("md5")
+DigestKeys.algorithms += "sha1"
 ```
 
 ### Filters

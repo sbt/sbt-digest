@@ -8,4 +8,4 @@ $ absent target/public-checksums/css/a.css.sha1
 $ exists target/public/js/a.js
 
 $ exists target/public-checksums/js/a.js.md5
-$ exists target/public-checksums/js/a.js.sha1
+$ absent target/public-checksums/js/a.js.sha1

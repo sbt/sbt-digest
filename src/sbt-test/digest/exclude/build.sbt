@@ -10,7 +10,7 @@ excludeFilter in addChecksums := "*.css"
 
 // for checking that the produced pipeline mappings are correct
 
-val expected = Set("css/a.css", "js/a.js", "js/a.js.md5", "js/a.js.sha1")
+val expected = Set("css/a.css", "js/a.js", "js/a.js.md5")
 
 val checkMappings = taskKey[Unit]("check the pipeline mappings")
 
