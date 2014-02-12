@@ -3,6 +3,8 @@ sbt-digest
 
 [sbt-web] plugin for adding checksum files for web assets.
 
+[![Build Status](https://travis-ci.org/sbt/sbt-digest.png?branch=master)](https://travis-ci.org/sbt/sbt-digest)
+
 
 Add plugin
 ----------
