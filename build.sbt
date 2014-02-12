@@ -6,6 +6,8 @@ name := "sbt-digest"
 
 version := "1.0.0-SNAPSHOT"
 
+resolvers += Classpaths.sbtPluginSnapshots
+
 addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-SNAPSHOT")
 
 publishMavenStyle := false
