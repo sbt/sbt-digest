@@ -16,21 +16,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.0.0-SNAPSHOT")
 ```
 
 
-Add settings
-------------
-
-In a `build.sbt` file, add the `digestSettings` after `webSettings`. For example:
-
-```scala
-webSettings
-
-digestSettings
-```
-
-To create checksums for assets produced or modified by other sbt-web plugins,
-place the `digestSettings` after the settings for these other plugins.
-
-
 Configuration
 -------------
 

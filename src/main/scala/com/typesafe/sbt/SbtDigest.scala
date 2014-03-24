@@ -3,10 +3,13 @@ package com.typesafe.sbt
 import sbt._
 import sbt.Keys._
 import com.typesafe.sbt.web.pipeline.Pipeline
+import com.typesafe.sbt.web.SbtWebPlugin
 import com.typesafe.sbt.web.SbtWebPlugin.WebKeys.{ pipelineStages, webTarget }
 import org.apache.ivy.util.ChecksumHelper
 
-object SbtDigest extends Plugin {
+object SbtDigest extends AutoPlugin with AutoImport {
+
+  def select = SbtWebPlugin
 
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
@@ -15,7 +18,7 @@ object SbtDigest extends Plugin {
 
   import DigestKeys._
 
-  lazy val digestSettings: Seq[Setting[_]] = Seq(
+  override def projectSettings: Seq[Setting[_]] = Seq(
     algorithms := Seq("md5"),
     includeFilter in addChecksums := AllPassFilter,
     excludeFilter in addChecksums := HiddenFileFilter,
