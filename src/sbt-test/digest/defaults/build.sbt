@@ -1,10 +1,8 @@
-webSettings
-
-digestSettings
+import com.typesafe.sbt.web.SbtWebPlugin.WebKeys
 
 // for checking that the produced pipeline mappings are correct
 
-val expected = Set("css/a.css", "css/a.css.md5", "js/a.js", "js/a.js.md5")
+val expected = Set("css", "css/a.css", "css/a.css.md5", "js", "js/a.js", "js/a.js.md5")
 
 val checkMappings = taskKey[Unit]("check the pipeline mappings")
 
