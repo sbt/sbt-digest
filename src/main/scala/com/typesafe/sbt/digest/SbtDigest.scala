@@ -1,16 +1,16 @@
 package com.typesafe.sbt.digest
 
 import sbt._
-import com.typesafe.sbt.web.SbtWebPlugin
+import com.typesafe.sbt.web.SbtWeb
 import com.typesafe.sbt.web.pipeline.Pipeline
 import sbt.Keys._
-import com.typesafe.sbt.web.SbtWebPlugin.WebKeys._
+import com.typesafe.sbt.web.SbtWeb.WebKeys._
 import org.apache.ivy.util.ChecksumHelper
 import sbt.Task
 
-object SbtDigestPlugin extends AutoPlugin {
+object SbtDigest extends AutoPlugin {
 
-  override def requires = SbtWebPlugin
+  override def requires = SbtWeb
   override def trigger = AllRequirements
 
   object DigestKeys {

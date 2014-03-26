@@ -1,7 +1,7 @@
-import com.typesafe.sbt.web.SbtWebPlugin.WebKeys
-import com.typesafe.sbt.web.SbtWebPlugin
+import com.typesafe.sbt.web.SbtWeb.WebKeys
+import com.typesafe.sbt.web.SbtWeb
 
-lazy val root = project.in(file(".")).addPlugins(SbtWebPlugin)
+lazy val root = project.in(file(".")).addPlugins(SbtWeb)
 
 // for checking that the produced pipeline mappings are correct
 
