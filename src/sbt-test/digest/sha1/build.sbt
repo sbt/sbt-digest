@@ -1,4 +1,8 @@
+import com.typesafe.sbt.web.SbtWebPlugin
 import com.typesafe.sbt.web.SbtWebPlugin.WebKeys
+import com.typesafe.sbt.digest.SbtDigestPlugin._
+
+val root = project.in(file(".")).addPlugins(SbtWebPlugin)
 
 // also create sha1 files
 

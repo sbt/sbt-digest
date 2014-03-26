@@ -1,5 +1,9 @@
 import com.typesafe.sbt.web.SbtWebPlugin.WebKeys
+import com.typesafe.sbt.digest.SbtDigestPlugin
+import com.typesafe.sbt.digest.SbtDigestPlugin._
 import DigestKeys.addChecksums
+
+val root = project.in(file(".")).addPlugins(SbtDigestPlugin)
 
 // set an exclude filter for css files
 

@@ -1,15 +1,17 @@
-package com.typesafe.sbt
+package com.typesafe.sbt.digest
 
 import sbt._
-import sbt.Keys._
-import com.typesafe.sbt.web.pipeline.Pipeline
 import com.typesafe.sbt.web.SbtWebPlugin
-import com.typesafe.sbt.web.SbtWebPlugin.WebKeys.{ pipelineStages, webTarget }
+import com.typesafe.sbt.web.pipeline.Pipeline
+import sbt.Keys._
+import com.typesafe.sbt.web.SbtWebPlugin.WebKeys._
 import org.apache.ivy.util.ChecksumHelper
+import sbt.Task
 
-object SbtDigest extends AutoPlugin with AutoImport {
+object SbtDigestPlugin extends AutoPlugin {
 
-  def select = SbtWebPlugin
+  override def requires = SbtWebPlugin
+  override def trigger = AllRequirements
 
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
@@ -22,11 +24,11 @@ object SbtDigest extends AutoPlugin with AutoImport {
     algorithms := Seq("md5"),
     includeFilter in addChecksums := AllPassFilter,
     excludeFilter in addChecksums := HiddenFileFilter,
-    addChecksums <<= addChecksumFiles,
+    addChecksums := checksumFiles.value,
     pipelineStages <+= addChecksums
   )
 
-  def addChecksumFiles: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappings =>
+  def checksumFiles: Def.Initialize[Task[Pipeline.Stage]] = Def.task { mappings =>
     val targetDir = webTarget.value / addChecksums.key.label
     val include = (includeFilter in addChecksums).value
     val exclude = (excludeFilter in addChecksums).value
