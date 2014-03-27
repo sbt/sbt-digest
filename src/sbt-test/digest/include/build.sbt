@@ -1,13 +1,10 @@
 import com.typesafe.sbt.web.SbtWeb
-import com.typesafe.sbt.web.SbtWeb.WebKeys
-import com.typesafe.sbt.digest.SbtDigest._
-import DigestKeys.addChecksums
 
 val root = project.in(file(".")).addPlugins(SbtWeb)
 
 // set an include filter for js files only
 
-includeFilter in addChecksums := "*.js"
+includeFilter in DigestKeys.addChecksums := "*.js"
 
 // for checking that the produced pipeline mappings are correct
 

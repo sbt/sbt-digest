@@ -1,6 +1,4 @@
 import com.typesafe.sbt.web.SbtWeb
-import com.typesafe.sbt.web.SbtWeb.WebKeys
-import com.typesafe.sbt.digest.SbtDigest._
 
 val root = project.in(file(".")).addPlugins(SbtWeb)
 

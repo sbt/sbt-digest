@@ -1,13 +1,10 @@
 import com.typesafe.sbt.web.SbtWeb
-import com.typesafe.sbt.web.SbtWeb.WebKeys
-import com.typesafe.sbt.digest.SbtDigest._
-import DigestKeys.addChecksums
 
 val root = project.in(file(".")).addPlugins(SbtWeb)
 
 // set an exclude filter for css files
 
-excludeFilter in addChecksums := "*.css"
+excludeFilter in DigestKeys.addChecksums := "*.css"
 
 // for checking that the produced pipeline mappings are correct
 
