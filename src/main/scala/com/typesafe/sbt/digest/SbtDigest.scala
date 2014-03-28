@@ -24,7 +24,8 @@ object SbtDigest extends AutoPlugin {
 
   val autoImport = Import
 
-  import SbtWeb.autoImport.WebKeys._
+  import SbtWeb.autoImport._
+  import WebKeys._
   import autoImport.DigestKeys._
 
   override def projectSettings: Seq[Setting[_]] = Seq(

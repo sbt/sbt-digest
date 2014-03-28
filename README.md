@@ -17,9 +17,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.0.0-SNAPSHOT")
 
 Your project's build file also needs to enable sbt-web plugins. For example with build.sbt:
 
-    import com.typesafe.sbt.web.SbtWeb
-
-    lazy val root = project.in(file(".")).addPlugins(SbtWeb)
+    lazy val root = (project. in file(".")).addPlugins(SbtWeb)
 
 Configuration
 -------------

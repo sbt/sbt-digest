@@ -1,6 +1,4 @@
-import com.typesafe.sbt.web.SbtWeb
-
-val root = project.in(file(".")).addPlugins(SbtWeb)
+val root = (project in file(".")).addPlugins(SbtWeb)
 
 // also create sha1 files
 

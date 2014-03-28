@@ -1,6 +1,4 @@
-import com.typesafe.sbt.web.SbtWeb
-
-val root = project.in(file(".")).addPlugins(SbtWeb)
+val root = (project in file(".")).addPlugins(SbtWeb)
 
 // set an exclude filter for css files
 
