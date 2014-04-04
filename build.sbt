@@ -4,7 +4,7 @@ organization := "com.typesafe.sbt"
 
 name := "sbt-digest"
 
-version := "1.0.0-M2"
+version := "1.0.0-SNAPSHOT"
 
 resolvers += Classpaths.sbtPluginSnapshots
 
