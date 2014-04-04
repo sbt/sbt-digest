@@ -4,11 +4,14 @@ organization := "com.typesafe.sbt"
 
 name := "sbt-digest"
 
-version := "1.0.0-SNAPSHOT"
+version := "1.0.0-M2"
 
 resolvers += Classpaths.sbtPluginSnapshots
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-SNAPSHOT")
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-M2")
+
+// FIXME: Working around https://github.com/sbt/sbt/issues/1156#issuecomment-39317363
+isSnapshot := true
 
 publishMavenStyle := false
 
