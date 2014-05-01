@@ -19,6 +19,12 @@ Your project's build file also needs to enable sbt-web plugins. For example with
 
     lazy val root = (project. in file(".")).addPlugins(SbtWeb)
 
+As with all sbt-web asset pipeline plugins you must declare their order of execution e.g.:
+
+```scala
+pipelineStages := Seq(digest)
+```
+
 Configuration
 -------------
 
@@ -38,13 +44,13 @@ Include and exclude filters can be provided. For example, to only create
 checksum files for `.js` files:
 
 ```scala
-includeFilter in DigestKeys.addChecksums := "*.js"
+includeFilter in digest := "*.js"
 ```
 
 Or to exclude all `.js` files but include any other files:
 
 ```scala
-excludeFilter in DigestKeys.addChecksums := "*.js"
+excludeFilter in digest := "*.js"
 ```
 
 
