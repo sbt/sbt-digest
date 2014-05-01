@@ -9,9 +9,10 @@ import sbt.Task
 
 object Import {
 
+  val digest = TaskKey[Pipeline.Stage]("digest", "Add checksum files to asset pipeline.")
+
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
-    val addChecksums = TaskKey[Pipeline.Stage]("digest-add-checksums", "Add checksum files to asset pipeline.")
   }
 
 }
@@ -26,14 +27,14 @@ object SbtDigest extends AutoPlugin {
 
   import SbtWeb.autoImport._
   import WebKeys._
-  import autoImport.DigestKeys._
+  import autoImport._
+  import DigestKeys._
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     algorithms := Seq("md5"),
-    includeFilter in addChecksums := AllPassFilter,
-    excludeFilter in addChecksums := HiddenFileFilter,
-    addChecksums := checksumFiles.value,
-    pipelineStages <+= addChecksums
+    includeFilter in digest := AllPassFilter,
+    excludeFilter in digest := HiddenFileFilter,
+    digest := checksumFiles.value
   )
 
   private def generateChecksumFiles(file: File, path: String, algorithm: String, targetDir: File): Seq[PathMapping] = {
@@ -50,9 +51,9 @@ object SbtDigest extends AutoPlugin {
 
   def checksumFiles: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings =>
-      val targetDir = webTarget.value / addChecksums.key.label
-      val include = (includeFilter in addChecksums).value
-      val exclude = (excludeFilter in addChecksums).value
+      val targetDir = webTarget.value / digest.key.label
+      val include = (includeFilter in digest).value
+      val exclude = (excludeFilter in digest).value
       val checksumMappings: Seq[PathMapping] = for {
         (file, path) <- mappings if !file.isDirectory && include.accept(file) && !exclude.accept(file)
         algorithm <- algorithms.value

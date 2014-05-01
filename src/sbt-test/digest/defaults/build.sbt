@@ -1,5 +1,7 @@
 lazy val root = (project in file(".")).addPlugins(SbtWeb)
 
+pipelineStages := Seq(digest)
+
 // for checking that the produced pipeline mappings are correct
 
 val expected = Set(

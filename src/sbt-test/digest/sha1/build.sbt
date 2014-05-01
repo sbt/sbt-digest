@@ -1,5 +1,7 @@
 val root = (project in file(".")).addPlugins(SbtWeb)
 
+pipelineStages := Seq(digest)
+
 // also create sha1 files
 
 DigestKeys.algorithms += "sha1"

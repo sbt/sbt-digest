@@ -1,11 +1,11 @@
 > checkMappings
 > webStage
 
-$ exists target/web/digestAddChecksums/css/a.css.md5
-$ exists target/web/digestAddChecksums/css/a.css.sha1
+$ exists target/web/digest/css/a.css.md5
+$ exists target/web/digest/css/a.css.sha1
 
-$ exists target/web/digestAddChecksums/js/a.js.md5
-$ exists target/web/digestAddChecksums/js/a.js.sha1
+$ exists target/web/digest/js/a.js.md5
+$ exists target/web/digest/js/a.js.sha1
 
 $ exists target/web/stage/css/a.css
 $ exists target/web/stage/css/a.css.md5
