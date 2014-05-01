@@ -1,7 +1,7 @@
 package com.typesafe.sbt.digest
 
 import sbt._
-import com.typesafe.sbt.web.SbtWeb
+import com.typesafe.sbt.web.{PathMapping, SbtWeb}
 import com.typesafe.sbt.web.pipeline.Pipeline
 import sbt.Keys._
 import org.apache.ivy.util.ChecksumHelper
@@ -36,21 +36,28 @@ object SbtDigest extends AutoPlugin {
     pipelineStages <+= addChecksums
   )
 
+  private def generateChecksumFiles(file: File, path: String, algorithm: String, targetDir: File): Seq[PathMapping] = {
+    val checksum = ChecksumHelper.computeAsString(file, algorithm)
+    val checksumPath = path + "." + algorithm
+    val checksumFile = targetDir / checksumPath
+    IO.write(checksumFile, checksum)
+    val pathFile = sbt.file(path)
+    val checksummedPath = (pathFile.getParentFile / (checksum + "-" + pathFile.getName)).getPath
+    val checksummedFile = targetDir / checksummedPath
+    IO.copyFile(file, checksummedFile)
+    Seq((checksumFile, checksumPath), (checksummedFile, checksummedPath))
+  }
+
   def checksumFiles: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings =>
       val targetDir = webTarget.value / addChecksums.key.label
       val include = (includeFilter in addChecksums).value
       val exclude = (excludeFilter in addChecksums).value
-      val checksumMappings = for {
+      val checksumMappings: Seq[PathMapping] = for {
         (file, path) <- mappings if !file.isDirectory && include.accept(file) && !exclude.accept(file)
         algorithm <- algorithms.value
-      } yield {
-        val checksum = ChecksumHelper.computeAsString(file, algorithm)
-        val checksumPath = path + "." + algorithm
-        val checksumFile = targetDir / checksumPath
-        IO.write(checksumFile, checksum)
-        (checksumFile, checksumPath)
-      }
+        mapping <- generateChecksumFiles(file, path, algorithm, targetDir)
+      } yield mapping
       mappings ++ checksumMappings
   }
 }
