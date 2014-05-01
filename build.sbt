@@ -8,7 +8,7 @@ version := "1.0.0-SNAPSHOT"
 
 resolvers += Classpaths.sbtPluginSnapshots
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-M2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-SNAPSHOT")
 
 // FIXME: Working around https://github.com/sbt/sbt/issues/1156#issuecomment-39317363
 isSnapshot := true
