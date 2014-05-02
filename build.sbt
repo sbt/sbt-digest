@@ -6,12 +6,11 @@ name := "sbt-digest"
 
 version := "1.0.0-SNAPSHOT"
 
+scalaVersion := "2.10.4"
+
 resolvers += Classpaths.sbtPluginSnapshots
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0-SNAPSHOT")
-
-// FIXME: Working around https://github.com/sbt/sbt/issues/1156#issuecomment-39317363
-isSnapshot := true
 
 publishMavenStyle := false
 

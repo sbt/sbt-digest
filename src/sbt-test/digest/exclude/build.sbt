@@ -1,4 +1,4 @@
-val root = (project in file(".")).addPlugins(SbtWeb)
+val root = (project in file(".")).enablePlugins(SbtWeb)
 
 pipelineStages := Seq(digest)
 
