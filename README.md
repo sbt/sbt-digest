@@ -12,7 +12,7 @@ Add plugin
 Add the plugin to `project/plugins.sbt`. For example:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.0.0-RC2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.0.0")
 ```
 
 Your project's build file also needs to enable sbt-web plugins. For example with build.sbt:
