@@ -1,7 +1,7 @@
 sbt-digest
 ==========
 
-[sbt-web] plugin for adding checksum files for web assets.
+[sbt-web] plugin for adding checksum files for web assets. Checksums are useful for asset fingerprinting and etag values.
 
 [![Build Status](https://travis-ci.org/sbt/sbt-digest.png?branch=master)](https://travis-ci.org/sbt/sbt-digest)
 
