@@ -1,0 +1,103 @@
+> checkMappings
+
+# check generated checksums
+
+$ absent target/web/digest/css/a.css.md5
+$ absent target/web/digest/css/a.css.sha1
+
+$ absent target/web/digest/css/b.css.md5
+$ absent target/web/digest/css/b.css.sha1
+
+$ absent target/web/digest/css/c.css.md5
+$ absent target/web/digest/css/c.css.sha1
+
+$ absent target/web/digest/css/d.css.md5
+$ absent target/web/digest/css/d.css.sha1
+
+$ absent target/web/digest/css/e.css.md5
+$ absent target/web/digest/css/e.css.sha1
+
+$ absent target/web/digest/css/f.css.md5
+$ absent target/web/digest/css/f.css.sha1
+
+$ exists target/web/digest/js/a.js.md5
+$ absent target/web/digest/js/a.js.sha1
+
+$ absent target/web/digest/js/b.js.md5
+$ absent target/web/digest/js/b.js.sha1
+
+$ absent target/web/digest/js/c.js.md5
+$ absent target/web/digest/js/c.js.sha1
+
+$ exists target/web/digest/js/d.js.md5
+$ absent target/web/digest/js/d.js.sha1
+
+$ absent target/web/digest/js/e.js.md5
+$ absent target/web/digest/js/e.js.sha1
+
+$ absent target/web/digest/js/f.js.md5
+$ absent target/web/digest/js/f.js.sha1
+
+
+> webStage
+
+# check final pipeline files
+
+$ exists target/web/stage/css/a.css
+$ absent target/web/stage/css/a.css.md5
+$ absent target/web/stage/css/a.css.sha1
+
+$ exists target/web/stage/css/b.css
+$ exists target/web/stage/css/b.css.md5
+$ absent target/web/stage/css/b.css.sha1
+
+$ exists target/web/stage/css/c.css
+$ exists target/web/stage/css/c.css.md5
+$ absent target/web/stage/css/c.css.sha1
+$ exists target/web/stage/css/f66bcfb539dfd672baf47402fbd2804c-c.css
+
+$ exists target/web/stage/css/d.css
+$ absent target/web/stage/css/d.css.md5
+$ exists target/web/stage/css/d.css.sha1
+$ exists target/web/stage/css/73c9d28a8d2970eaa61b0fc3f91a2cfc3816747d-d.css
+
+$ absent target/web/stage/css/e.css
+$ exists target/web/stage/css/e.css.md5
+$ absent target/web/stage/css/e.css.sha1
+$ exists target/web/stage/css/5a5bb2504a8bb8b222766f27b279542e-e.css
+
+$ absent target/web/stage/css/f.css
+$ absent target/web/stage/css/f.css.md5
+$ absent target/web/stage/css/f.css.sha1
+$ exists target/web/stage/css/ab2b049fa2c74cfae35b7b629259a382-f.css
+
+$ exists target/web/stage/js/a.js
+$ exists target/web/stage/js/a.js.md5
+$ absent target/web/stage/js/a.js.sha1
+$ exists target/web/stage/js/800f8a8242c581c3075343bcc1995e16-a.js
+
+$ exists target/web/stage/js/b.js
+$ exists target/web/stage/js/b.js.md5
+$ absent target/web/stage/js/b.js.sha1
+$ exists target/web/stage/js/8f4a26afc0d7bf5fbd0e05e96a380c0e-b.js
+
+$ exists target/web/stage/js/c.js
+$ exists target/web/stage/js/c.js.md5
+$ absent target/web/stage/js/c.js.sha1
+$ exists target/web/stage/js/10a5b9df19bf35865246507d1542c743-c.js
+
+$ exists target/web/stage/js/d.js
+$ exists target/web/stage/js/d.js.md5
+$ exists target/web/stage/js/d.js.sha1
+$ exists target/web/stage/js/0346e2e7d668f046cb2e8a831915dfc3-d.js
+$ exists target/web/stage/js/8a064dc23798d5e5771b55df3585c6cfdb698efc-d.js
+
+$ absent target/web/stage/js/e.js
+$ exists target/web/stage/js/e.js.md5
+$ absent target/web/stage/js/e.js.sha1
+$ exists target/web/stage/js/02c45f94eb87f048b5df3909895f78a2-e.js
+
+$ absent target/web/stage/js/f.js
+$ absent target/web/stage/js/f.js.md5
+$ absent target/web/stage/js/f.js.sha1
+$ exists target/web/stage/js/623cc43ffbcf19c2d473ac0c0c4aeb1a-f.js
