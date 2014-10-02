@@ -2,6 +2,7 @@ package com.typesafe.sbt.digest
 
 import sbt._
 import com.typesafe.sbt.web.{PathMapping, SbtWeb}
+import com.typesafe.sbt.web.js.JS
 import com.typesafe.sbt.web.pipeline.Pipeline
 import sbt.Keys._
 import org.apache.ivy.util.ChecksumHelper
@@ -13,6 +14,8 @@ object Import {
 
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
+    val indexPath = TaskKey[Option[String]]("digest-index-path", "Path to the generated asset index file.")
+    val indexWriter = TaskKey[Map[String, String] => String]("digest-index-writer", "Function that writes the asset index.")
   }
 
 }
@@ -32,6 +35,8 @@ object SbtDigest extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     algorithms := Seq("md5"),
+    indexPath := None,
+    indexWriter := writeJsIndex,
     includeFilter in digest := AllPassFilter,
     excludeFilter in digest := HiddenFileFilter,
     digest := digestStage.value
@@ -39,11 +44,24 @@ object SbtDigest extends AutoPlugin {
 
   def digestStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     mappings =>
-      val targetDir = webTarget.value / digest.key.label
-      val include   = (includeFilter in digest).value
-      val exclude   = (excludeFilter in digest).value
-      val enabled   = algorithms.value
-      DigestStage.run(mappings, enabled, include, exclude, targetDir)
+      DigestStage.run(
+        mappings,
+        algorithms.value,
+        (includeFilter in digest).value,
+        (excludeFilter in digest).value,
+        webTarget.value / digest.key.label,
+        indexPath.value,
+        indexWriter.value
+      )
+  }
+
+  def writeJsIndex(index: Map[String, String]): String = {
+    JS(index).toString
+  }
+
+  def writeJsIndex(base: String)(index: Map[String, String]): String = {
+    val rebased = index map { case (original, versioned) => (base + original) -> (base + versioned) }
+    writeJsIndex(rebased)
   }
 
   object DigestStage {
@@ -62,22 +80,50 @@ object SbtDigest extends AutoPlugin {
     case class VersionedMapping(originalPath: String, algorithm: String, checksum: String, mapping: PathMapping) extends DigestMapping
 
     sealed trait DigestOutput {
+      def originalPath: String
       def mappings: Seq[PathMapping]
     }
 
     case class Digested(original: Option[OriginalMapping], checksums: Seq[ChecksumMapping], versioned: Seq[VersionedMapping]) extends DigestOutput {
-      def mappings = (original.toSeq ++ checksums ++ versioned).map(_.mapping)
+      val digestMappings: Seq[DigestMapping] = original.toSeq ++ checksums ++ versioned
+      val originalPath: String = digestMappings.headOption.fold("")(_.originalPath)
+      val mappings: Seq[PathMapping] = digestMappings.map(_.mapping)
     }
 
     case class Undigested(mapping: PathMapping) extends DigestOutput {
-      def mappings = Seq(mapping)
+      val originalPath: String = mapping.path
+      val mappings: Seq[PathMapping] = Seq(mapping)
     }
 
     /**
      * Add digest mappings for assets. Take into account existing checksums and versioned files.
      */
-    def run(mappings: Seq[PathMapping], algorithms: Seq[String], include: FileFilter, exclude: FileFilter, targetDir: File): Seq[PathMapping] = {
-      process(mappings, algorithms, include, exclude, targetDir) flatMap (_.mappings)
+    def run(
+      mappings: Seq[PathMapping],
+      algorithms: Seq[String],
+      include: FileFilter,
+      exclude: FileFilter,
+      targetDir: File,
+      indexPathOpt: Option[String],
+      indexWriter: Map[String, String] => String
+    ): Seq[PathMapping] = {
+      val processed = process(mappings, algorithms, include, exclude, targetDir)
+      val digested = indexPathOpt.fold(processed) { indexPath =>
+        // generate an index file and add to digested outputs
+        // replace any existing file at the index path
+        val filtered = processed filterNot (_.originalPath == indexPath)
+        val indexMap = (filtered flatMap {
+          case Digested(_, _, versioned) =>
+            versioned.headOption map { v => normalizePath(v.originalPath) -> normalizePath(v.mapping.path) }
+          case _ => None
+        }).toMap
+        val indexContent = indexWriter(indexMap)
+        val indexFile = targetDir / indexPath
+        IO.write(indexFile, indexContent)
+        val digestedIndex = process(Seq(indexFile -> indexPath), algorithms, include, exclude, targetDir)
+        filtered ++ digestedIndex
+      }
+      digested flatMap (_.mappings)
     }
 
     /**
@@ -91,14 +137,14 @@ object SbtDigest extends AutoPlugin {
       val digested = grouped map {
         case (path, digestMappings) =>
           val original          = (digestMappings collect { case o: OriginalMapping => o }).headOption
-          val originalFile      = original map { _.mapping._1 } filter { file => include.accept(file) && !exclude.accept(file) }
+          val originalFile      = original map { _.mapping.file } filter { file => include.accept(file) && !exclude.accept(file) }
           val existingChecksums = digestMappings collect { case c: ChecksumMapping => c }
           val missingChecksums  = algorithms diff (existingChecksums map (_.algorithm))
           val newChecksums      = missingChecksums flatMap { algorithm => originalFile.map(file => generateChecksum(file, path, algorithm, targetDir)) }
           val checksums         = existingChecksums ++ newChecksums
           val existingVersioned = digestMappings collect { case v: VersionedMapping => v }
           val missingVersioned  = algorithms diff (existingVersioned map (_.algorithm))
-          val newVersioned      = missingVersioned flatMap { algorithm => originalFile.map(file => generateVersioned(file, path, algorithm)) }
+          val newVersioned      = missingVersioned flatMap { algorithm => originalFile.map(file => generateVersioned(file, path, algorithm, targetDir)) }
           val versioned         = existingVersioned ++ newVersioned
           Digested(original, checksums, versioned)
       }
@@ -121,7 +167,7 @@ object SbtDigest extends AutoPlugin {
      * Create a digest mapping for an original file.
      */
     def originalMapping(mapping: PathMapping): OriginalMapping = {
-      OriginalMapping(mapping._2, mapping)
+      OriginalMapping(mapping.path, mapping)
     }
 
     /**
@@ -171,10 +217,13 @@ object SbtDigest extends AutoPlugin {
     /**
      * Create a versioned mapping with the checksum in the name.
      */
-    def generateVersioned(file: File, path: String, algorithm: String): VersionedMapping = {
-      // use original file with new versioned path, rather than copying
+    def generateVersioned(file: File, path: String, algorithm: String, targetDir: File): VersionedMapping = {
       val checksum = computeChecksum(file, algorithm)
-      VersionedMapping(path, algorithm, checksum, file -> versioned(path, checksum))
+      val versionedPath = versioned(path, checksum)
+      val versionedFile = targetDir / versionedPath
+      // need to copy the file, otherwise packaging won't include both files
+      IO.copyFile(file, versionedFile)
+      VersionedMapping(path, algorithm, checksum, versionedFile -> versionedPath)
     }
 
     /**
@@ -223,6 +272,21 @@ object SbtDigest extends AutoPlugin {
     def buildPath(base: String, name: String, ext: String): String = {
       val suffix = if (ext.isEmpty) "" else ("." + ext)
       (file(base) / (name + suffix)).getPath
+    }
+
+    /**
+     * Replace platform-specific separators with `/`.
+     */
+    def normalizePath(path: String, separator: Char = java.io.File.separatorChar): String = {
+      if (separator == '/') path else path.replace(separator, '/')
+    }
+
+    /**
+     * Access PathMapping file and path with named methods.
+     */
+    implicit class PathMappingAccessors(mapping: (File, String)) {
+      def file: File = mapping._1
+      def path: String = mapping._2
     }
   }
 
