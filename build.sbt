@@ -8,7 +8,7 @@ scalaVersion := "2.10.4"
 
 resolvers += Classpaths.sbtPluginSnapshots
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.0.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.1.1")
 
 publishMavenStyle := false
 
