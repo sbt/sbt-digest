@@ -271,7 +271,7 @@ object SbtDigest extends AutoPlugin {
      */
     def buildPath(base: String, name: String, ext: String): String = {
       val suffix = if (ext.isEmpty) "" else ("." + ext)
-      (file(base) / (name + suffix)).getPath
+      (file(base) / (name + suffix)).getPath.stripPrefix("\\")
     }
 
     /**
