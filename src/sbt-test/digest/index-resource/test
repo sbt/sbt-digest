@@ -1,0 +1,22 @@
+> checkMappings
+> webStage
+
+$ exists target/web/digest/css/a.css.md5
+$ absent target/web/digest/css/a.css.sha1
+
+$ exists target/web/digest/js/a.js.md5
+$ absent target/web/digest/js/a.js.sha1
+
+$ exists target/scala-2.10/resource_managed/main/assets.index.json
+
+$ absent target/web/digest/js/index.js
+$ absent target/web/digest/js/index.js.md5
+$ absent target/web/digest/js/index.js.sha1
+
+$ exists target/web/stage/css/a.css
+$ exists target/web/stage/css/a.css.md5
+$ absent target/web/stage/css/a.css.sha1
+
+$ exists target/web/stage/js/a.js
+$ exists target/web/stage/js/a.js.md5
+$ absent target/web/stage/js/a.js.sha1

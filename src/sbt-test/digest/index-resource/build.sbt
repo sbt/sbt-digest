@@ -2,7 +2,7 @@ lazy val root = (project in file(".")).enablePlugins(SbtWeb)
 
 pipelineStages := Seq(digest)
 
-DigestKeys.indexFile := Some(WebKeys.webTarget.value / digest.key.label / "js/index.js")
+DigestKeys.indexFile := Some((resourceManaged in Compile).value / "assets.index.json")
 
 // write a sorted index file for testing
 DigestKeys.indexWriter := { index =>
@@ -15,8 +15,7 @@ DigestKeys.indexWriter := { index =>
 
 val expected = Set(
   "css", "css/a.css", "css/a.css.md5", "css/d41d8cd98f00b204e9800998ecf8427e-a.css",
-  "js", "js/a.js", "js/a.js.md5", "js/d41d8cd98f00b204e9800998ecf8427e-a.js",
-  "js/index.js", "js/index.js.md5", "js/101b7d084ad3065ba2034a180151bd33-index.js"
+  "js", "js/a.js", "js/a.js.md5", "js/d41d8cd98f00b204e9800998ecf8427e-a.js"
 )
 
 val checkMappings = taskKey[Unit]("check the pipeline mappings")
