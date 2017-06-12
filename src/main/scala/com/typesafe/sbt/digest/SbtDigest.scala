@@ -14,7 +14,7 @@ object Import {
 
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
-    val indexPath = TaskKey[Option[String]]("digest-index-path", "Path to the generated asset index file.")
+    val indexFile = TaskKey[Option[File]]("digest-index-file", "Generated asset index file.")
     val indexWriter = TaskKey[Map[String, String] => String]("digest-index-writer", "Function that writes the asset index.")
   }
 
@@ -35,7 +35,7 @@ object SbtDigest extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     algorithms := Seq("md5"),
-    indexPath := None,
+    indexFile := None,
     indexWriter := writeJsIndex,
     includeFilter in digest := AllPassFilter,
     excludeFilter in digest := HiddenFileFilter,
@@ -50,7 +50,7 @@ object SbtDigest extends AutoPlugin {
         (includeFilter in digest).value,
         (excludeFilter in digest).value,
         webTarget.value / digest.key.label,
-        indexPath.value,
+        indexFile.value,
         indexWriter.value
       )
   }
@@ -104,24 +104,27 @@ object SbtDigest extends AutoPlugin {
       include: FileFilter,
       exclude: FileFilter,
       targetDir: File,
-      indexPathOpt: Option[String],
+      indexFileOpt: Option[File],
       indexWriter: Map[String, String] => String
     ): Seq[PathMapping] = {
       val processed = process(mappings, algorithms, include, exclude, targetDir)
-      val digested = indexPathOpt.fold(processed) { indexPath =>
+      val digested = indexFileOpt.fold(processed) { indexFile =>
         // generate an index file and add to digested outputs
         // replace any existing file at the index path
-        val filtered = processed filterNot (_.originalPath == indexPath)
+        val filtered = processed filterNot (_.originalPath == indexFile.toString)
         val indexMap = (filtered flatMap {
           case Digested(_, _, versioned) =>
             versioned.headOption map { v => normalizePath(v.originalPath) -> normalizePath(v.mapping.path) }
           case _ => None
         }).toMap
         val indexContent = indexWriter(indexMap)
-        val indexFile = targetDir / indexPath
         IO.write(indexFile, indexContent)
-        val digestedIndex = process(Seq(indexFile -> indexPath), algorithms, include, exclude, targetDir)
-        filtered ++ digestedIndex
+
+        val digestedIndex = IO.relativize(targetDir, indexFile) map { indexPath =>
+          process(Seq(indexFile -> indexPath), algorithms, include, exclude, targetDir)
+        }
+
+        filtered ++ digestedIndex.toSeq.flatten
       }
       digested flatMap (_.mappings)
     }
