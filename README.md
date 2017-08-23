@@ -16,8 +16,7 @@ sbt-digest will create a second copy of the file with the hash and a digest file
     ./target/web/digest/images/23dcc403b263f262692ac58437104acf-example.png
     ./target/web/digest/images/example.png.md5
 
-[![Build Status](https://travis-ci.org/sbt/sbt-digest.png?branch=master)](https://travis-ci.org/sbt/sbt-digest)
-
+[![Build Status](https://travis-ci.org/sbt/sbt-digest.svg?branch=master)](https://travis-ci.org/sbt/sbt-digest) [![Download](https://api.bintray.com/packages/sbt-web/sbt-plugin-releases/sbt-digest/images/download.svg) ](https://bintray.com/sbt-web/sbt-plugin-releases/sbt-digest/_latestVersion)
 
 Add plugin
 ----------
@@ -25,7 +24,7 @@ Add plugin
 Add the plugin to `project/plugins.sbt`. For example:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.2")
+addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.3")
 ```
 
 Your project's build file also needs to enable sbt-web plugins. For example with build.sbt:
