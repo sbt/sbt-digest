@@ -43,16 +43,14 @@ object SbtDigest extends AutoPlugin {
   )
 
   def digestStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
-    mappings =>
-      DigestStage.run(
-        mappings,
-        algorithms.value,
-        (includeFilter in digest).value,
-        (excludeFilter in digest).value,
-        webTarget.value / digest.key.label,
-        indexPath.value,
-        indexWriter.value
-      )
+    val algs = algorithms.value
+    val inc = (includeFilter in digest).value
+    val exc = (excludeFilter in digest).value
+    val target = webTarget.value / digest.key.label
+    val path = indexPath.value
+    val writer = indexWriter.value
+
+    mappings => DigestStage.run(mappings, algs, inc, exc, target, path, writer)
   }
 
   def writeJsIndex(index: Map[String, String]): String = {
