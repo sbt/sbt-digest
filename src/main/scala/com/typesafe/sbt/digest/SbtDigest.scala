@@ -37,15 +37,15 @@ object SbtDigest extends AutoPlugin {
     algorithms := Seq("md5"),
     indexPath := None,
     indexWriter := writeJsIndex,
-    includeFilter in digest := AllPassFilter,
-    excludeFilter in digest := HiddenFileFilter,
+    (digest / includeFilter) := AllPassFilter,
+    (digest / excludeFilter) := HiddenFileFilter,
     digest := digestStage.value
   )
 
   def digestStage: Def.Initialize[Task[Pipeline.Stage]] = Def.task {
     val algs = algorithms.value
-    val inc = (includeFilter in digest).value
-    val exc = (excludeFilter in digest).value
+    val inc = (digest / includeFilter).value
+    val exc = (digest / excludeFilter).value
     val target = webTarget.value / digest.key.label
     val path = indexPath.value
     val writer = indexWriter.value

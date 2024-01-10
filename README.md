@@ -16,7 +16,7 @@ sbt-digest will create a second copy of the file with the hash and a digest file
     ./target/web/digest/images/23dcc403b263f262692ac58437104acf-example.png
     ./target/web/digest/images/example.png.md5
 
-[![Build Status](https://travis-ci.org/sbt/sbt-digest.svg?branch=master)](https://travis-ci.org/sbt/sbt-digest) [![Download](https://api.bintray.com/packages/sbt-web/sbt-plugin-releases/sbt-digest/images/download.svg) ](https://bintray.com/sbt-web/sbt-plugin-releases/sbt-digest/_latestVersion)
+[![Build Status](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml/badge.svg)](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml)
 
 Add plugin
 ----------
@@ -24,7 +24,7 @@ Add plugin
 Add the plugin to `project/plugins.sbt`. For example:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.3")
+addSbtPlugin("com.github.sbt" % "sbt-digest" % "2.0.0")
 ```
 
 Your project's build file also needs to enable sbt-web plugins. For example with build.sbt:
@@ -42,9 +42,8 @@ Configuration
 
 ### Algorithms
 
-Supported hash algorithms are `md5` and `sha1`. The default is to only create
-`md5` checksum files. To configure this, modify the `algorithms`
-setting. For example, to also generate`sha1` checksum files:
+Supported hash algorithms are `md5` and `sha1`. The default is to only create `md5` checksum files. To configure this, modify the `algorithms` setting.
+For example, to also generate`sha1` checksum files:
 
 ```scala
 DigestKeys.algorithms += "sha1"
@@ -52,34 +51,28 @@ DigestKeys.algorithms += "sha1"
 
 ### Filters
 
-Include and exclude filters can be provided. For example, to only create
-checksum files for `.js` files:
+Include and exclude filters can be provided. For example, to only create checksum files for `.js` files:
 
 ```scala
-includeFilter in digest := "*.js"
+digest / includeFilter := "*.js"
 ```
 
 Or to exclude all `.js` files but include any other files:
 
 ```scala
-excludeFilter in digest := "*.js"
+digest / excludeFilter := "*.js"
 ```
 
 
 Contribution policy
 -------------------
 
-Contributions via GitHub pull requests are gladly accepted from their original
-author. Before we can accept pull requests, you will need to agree to the
-[Typesafe Contributor License Agreement][cla] online, using your GitHub account.
-
+Contributions via GitHub pull requests are gladly accepted from their original author. 
 
 License
 -------
 
 This code is licensed under the [Apache 2.0 License][apache].
 
-
 [sbt-web]: https://github.com/sbt/sbt-web
-[cla]: http://www.typesafe.com/contribute/cla
 [apache]: http://www.apache.org/licenses/LICENSE-2.0.html
