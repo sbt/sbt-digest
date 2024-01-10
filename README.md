@@ -3,6 +3,8 @@ sbt-digest
 
 [sbt-web] plugin for adding checksum files for web assets. Checksums are useful for asset fingerprinting and etag values.
 
+[![Build Status](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml/badge.svg)](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml)
+
 The plugin works by prepending a digest to the asset name. The default digest algorithm used is MD5.
 In addition an .md5 file (depending on the algorithm) is also generated containing the hash.
 The hash can then be used to lookup the associated hashed file.
@@ -15,8 +17,6 @@ sbt-digest will create a second copy of the file with the hash and a digest file
 
     ./target/web/digest/images/23dcc403b263f262692ac58437104acf-example.png
     ./target/web/digest/images/example.png.md5
-
-[![Build Status](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml/badge.svg)](https://github.com/sbt/sbt-digest/actions/workflows/build-test.yml)
 
 Add plugin
 ----------
