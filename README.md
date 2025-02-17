@@ -24,7 +24,7 @@ Add plugin
 Add the plugin to `project/plugins.sbt`. For example:
 
 ```scala
-addSbtPlugin("com.github.sbt" % "sbt-digest" % "2.0.0")
+addSbtPlugin("com.github.sbt" % "sbt-digest" % "2.1.0")
 ```
 
 Your project's build file also needs to enable sbt-web plugins. For example with build.sbt:
