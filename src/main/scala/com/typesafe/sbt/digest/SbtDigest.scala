@@ -196,7 +196,12 @@ object SbtDigest extends AutoPlugin {
      * Compute a checksum for a file. Supported algorithms are "md5", "sha1", "sha256", "sha384" and "sha512".
      */
     def computeChecksum(file: File, algorithm: String): String = {
-      ChecksumHelper.computeAsString(file, algorithm)
+      ChecksumHelper.computeAsString(file, algorithm match {
+        case "sha256" => "SHA-256"
+        case "sha384" => "SHA-384"
+        case "sha512" => "SHA-512"
+        case alg: String => alg
+      })
     }
 
     /**
