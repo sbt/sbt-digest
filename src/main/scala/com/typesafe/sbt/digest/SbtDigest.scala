@@ -5,7 +5,7 @@ import com.typesafe.sbt.web.{PathMapping, SbtWeb}
 import com.typesafe.sbt.web.js.JS
 import com.typesafe.sbt.web.pipeline.Pipeline
 import sbt.Keys._
-import org.apache.ivy.util.ChecksumHelper
+import com.github.sbt.digest.util.ChecksumHelper
 import sbt.Task
 
 object Import {
@@ -64,7 +64,7 @@ object SbtDigest extends AutoPlugin {
 
   object DigestStage {
 
-    val DigestAlgorithms = Seq("md5", "sha1")
+    val DigestAlgorithms = Seq("md5", "sha1", "sha256", "sha384", "sha512")
 
     sealed trait DigestMapping {
       def originalPath: String
@@ -193,10 +193,15 @@ object SbtDigest extends AutoPlugin {
     }
 
     /**
-     * Compute a checksum for a file. Supported algorithms are "md5" and "sha1".
+     * Compute a checksum for a file. Supported algorithms are "md5", "sha1", "sha256", "sha384" and "sha512".
      */
     def computeChecksum(file: File, algorithm: String): String = {
-      ChecksumHelper.computeAsString(file, algorithm)
+      ChecksumHelper.computeAsString(file, algorithm match {
+        case "sha256" => "SHA-256"
+        case "sha384" => "SHA-384"
+        case "sha512" => "SHA-512"
+        case alg: String => alg
+      })
     }
 
     /**
