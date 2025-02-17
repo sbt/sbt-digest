@@ -6,7 +6,7 @@
  *  (the "License"); you may not use this file except in compliance with
  *  the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *	  https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,13 +33,36 @@ import org.apache.ivy.util.FileUtil;
 public final class ChecksumHelper {
 
 	private static final int BUFFER_SIZE = 2048;
-	private static Map<String, String> algorithms = new HashMap<>();
+	private static final Map<String, String> algorithms = new HashMap<>();
 	static {
 		algorithms.put("md5", "MD5");
 		algorithms.put("sha1", "SHA-1");
-		algorithms.put("sha256", "SHA-256");
-		algorithms.put("sha384", "SHA-384");
-		algorithms.put("sha512", "SHA-512");
+
+		// higher versions of JRE support these algorithms
+		// https://docs.oracle.com/javase/6/docs/technotes/guides/security/StandardNames.html#MessageDigest
+		// conditionally add them
+		if (isAlgorithmSupportedInJRE("SHA-256")) {
+			algorithms.put("SHA-256", "SHA-256");
+		}
+		if (isAlgorithmSupportedInJRE("SHA-512")) {
+			algorithms.put("SHA-512", "SHA-512");
+		}
+		if (isAlgorithmSupportedInJRE("SHA-384")) {
+			algorithms.put("SHA-384", "SHA-384");
+		}
+
+	}
+
+	private static boolean isAlgorithmSupportedInJRE(final String algorithm) {
+		if (algorithm == null) {
+			return false;
+		}
+		try {
+			MessageDigest.getInstance(algorithm);
+			return true;
+		} catch (NoSuchAlgorithmException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -47,17 +70,18 @@ public final class ChecksumHelper {
 	 * IOException if the checksum is not compliant
 	 *
 	 * @param dest
-	 *            the file to test
+	 *			the file to test
 	 * @param checksumFile
-	 *            the file containing the expected checksum
+	 *			the file containing the expected checksum
 	 * @param algorithm
-	 *            the checksum algorithm to use
+	 *			the checksum algorithm to use
 	 * @throws IOException
-	 *             if an IO problem occur whle reading files or if the checksum is not compliant
+	 *			 if an IO problem occur while reading files or if the checksum is not compliant
 	 */
 	public static void check(File dest, File checksumFile, String algorithm) throws IOException {
-		String csFileContent = FileUtil.readEntirely(
-				new BufferedReader(new FileReader(checksumFile))).trim().toLowerCase(Locale.US);
+		String csFileContent = FileUtil
+				.readEntirely(new BufferedReader(new FileReader(checksumFile))).trim()
+				.toLowerCase(Locale.US);
 		String expected;
 		if (csFileContent.indexOf(' ') > -1
 				&& (csFileContent.startsWith("md") || csFileContent.startsWith("sha"))) {
@@ -69,13 +93,12 @@ public final class ChecksumHelper {
 				expected = csFileContent.substring(0, spaceIndex);
 
 				// IVY-1155: support some strange formats like this one:
-				// http://repo2.maven.org/maven2/org/apache/pdfbox/fontbox/0.8.0-incubator/fontbox-0.8.0-incubator.jar.md5
+				// https://repo1.maven.org/maven2/org/apache/pdfbox/fontbox/0.8.0-incubator/fontbox-0.8.0-incubator.jar.md5
 				if (expected.endsWith(":")) {
-					StringBuffer result = new StringBuffer();
-					char[] chars = csFileContent.substring(spaceIndex + 1).toCharArray();
-					for (int i = 0; i < chars.length; i++) {
-						if (!Character.isWhitespace(chars[i])) {
-							result.append(chars[i]);
+					StringBuilder result = new StringBuilder();
+					for (char ch : csFileContent.substring(spaceIndex + 1).toCharArray()) {
+						if (!Character.isWhitespace(ch)) {
+							result.append(ch);
 						}
 					}
 					expected = result.toString();
@@ -97,9 +120,8 @@ public final class ChecksumHelper {
 	}
 
 	private static byte[] compute(File f, String algorithm) throws IOException {
-		InputStream is = new FileInputStream(f);
 
-		try {
+		try (InputStream is = new FileInputStream(f)) {
 			MessageDigest md = getMessageDigest(algorithm);
 			md.reset();
 
@@ -109,8 +131,6 @@ public final class ChecksumHelper {
 				md.update(buf, 0, len);
 			}
 			return md.digest();
-		} finally {
-			is.close();
 		}
 	}
 
@@ -119,7 +139,7 @@ public final class ChecksumHelper {
 	}
 
 	private static MessageDigest getMessageDigest(String algorithm) {
-		String mdAlgorithm = (String) algorithms.get(algorithm);
+		String mdAlgorithm = algorithms.get(algorithm);
 		if (mdAlgorithm == null) {
 			throw new IllegalArgumentException("unknown algorithm " + algorithm);
 		}
@@ -131,15 +151,15 @@ public final class ChecksumHelper {
 	}
 
 	// byte to hex string converter
-	private static final char[] CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-			'a', 'b', 'c', 'd', 'e', 'f'};
+	private static final char[] CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a',
+			'b', 'c', 'd', 'e', 'f'};
 
 	/**
 	 * Convert a byte[] array to readable string format. This makes the "hex" readable!
 	 *
 	 * @return result String buffer in String format
 	 * @param in
-	 *            byte[] buffer to convert to string format
+	 *			byte[] buffer to convert to string format
 	 */
 	public static String byteArrayToHexString(byte[] in) {
 		byte ch = 0x00;
@@ -148,19 +168,19 @@ public final class ChecksumHelper {
 			return null;
 		}
 
-		StringBuffer out = new StringBuffer(in.length * 2);
+		StringBuilder out = new StringBuilder(in.length * 2);
 
-		//CheckStyle:MagicNumber OFF
-		for (int i = 0; i < in.length; i++) {
-			ch = (byte) (in[i] & 0xF0); // Strip off high nibble
+		// CheckStyle:MagicNumber OFF
+		for (byte bt : in) {
+			ch = (byte) (bt & 0xF0); // Strip off high nibble
 			ch = (byte) (ch >>> 4); // shift the bits down
 			ch = (byte) (ch & 0x0F); // must do this is high order bit is on!
 
-			out.append(CHARS[(int) ch]); // convert the nibble to a String Character
-			ch = (byte) (in[i] & 0x0F); // Strip off low nibble
-			out.append(CHARS[(int) ch]); // convert the nibble to a String Character
+			out.append(CHARS[ch]); // convert the nibble to a String Character
+			ch = (byte) (bt & 0x0F); // Strip off low nibble
+			out.append(CHARS[ch]); // convert the nibble to a String Character
 		}
-		//CheckStyle:MagicNumber ON
+		// CheckStyle:MagicNumber ON
 
 		return out.toString();
 	}
