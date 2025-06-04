@@ -2,8 +2,6 @@ lazy val `sbt-digest` = project in file(".")
 
 enablePlugins(SbtWebBase)
 
-sonatypeProfileName := "com.github.sbt.sbt-digest" // See https://issues.sonatype.org/browse/OSSRH-77819#comment-1203625
-
 description := "sbt-web plugin for adding checksum files for web assets. Checksums are useful for asset fingerprinting and etag values"
 
 developers += Developer(
