@@ -1,12 +1,14 @@
 lazy val root = (project in file(".")).enablePlugins(SbtWeb)
 
+target := baseDirectory.value / "target"
+
 // also run the digest stage twice
 
 pipelineStages := Seq(digest, digest)
 
 // only add new checksums and versioned files for .js
 
-includeFilter in digest := "*.js"
+digest / includeFilter := "*.js"
 
 // for checking that the produced pipeline mappings are correct
 

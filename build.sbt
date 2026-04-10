@@ -1,3 +1,8 @@
+lazy val scala212 = "2.12.21"
+lazy val scala3 = "3.8.3"
+
+ThisBuild / crossScalaVersions := Seq(scala212, scala3)
+
 lazy val `sbt-digest` = project in file(".")
 
 enablePlugins(SbtWebBase)
@@ -12,6 +17,20 @@ developers += Developer(
 )
 
 addSbtJsEngine("1.4.0-M4")
+
+pluginCrossBuild / sbtVersion := {
+  scalaBinaryVersion.value match {
+    case "2.12" => "1.12.9"
+    case _      => "2.0.0-RC11"
+  }
+}
+
+scalacOptions := {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, _)) => Seq("-Xsource:3")
+    case _            => Seq.empty
+  }
+}
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverVTagPrefix := false

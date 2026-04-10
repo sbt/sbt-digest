@@ -1,10 +1,12 @@
 val root = (project in file(".")).enablePlugins(SbtWeb)
 
+target := baseDirectory.value / "target"
+
 pipelineStages := Seq(digest)
 
 // set an exclude filter for css files
 
-excludeFilter in digest := "*.css"
+digest / excludeFilter := "*.css"
 
 // for checking that the produced pipeline mappings are correct
 

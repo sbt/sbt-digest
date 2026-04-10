@@ -1,5 +1,7 @@
 val root = (project in file(".")).enablePlugins(SbtWeb)
 
+target := baseDirectory.value / "target"
+
 pipelineStages := Seq(digest)
 
 // also create sha256 files
