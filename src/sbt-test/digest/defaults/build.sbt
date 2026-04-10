@@ -1,5 +1,7 @@
 lazy val root = (project in file(".")).enablePlugins(SbtWeb)
 
+target := baseDirectory.value / "target"
+
 pipelineStages := Seq(digest)
 
 // for checking that the produced pipeline mappings are correct

@@ -1,20 +1,25 @@
 package com.typesafe.sbt.digest
 
 import sbt._
+import com.typesafe.sbt.PluginCompat
 import com.typesafe.sbt.web.{PathMapping, SbtWeb}
 import com.typesafe.sbt.web.js.JS
 import com.typesafe.sbt.web.pipeline.Pipeline
 import sbt.Keys._
 import com.github.sbt.digest.util.ChecksumHelper
 import sbt.Task
+import xsbti.FileConverter
 
 object Import {
 
+  @transient
   val digest = TaskKey[Pipeline.Stage]("digest", "Add checksum files to asset pipeline.")
 
   object DigestKeys {
     val algorithms = SettingKey[Seq[String]]("digest-algorithms", "Types of checksum files to generate.")
+    @transient
     val indexPath = TaskKey[Option[String]]("digest-index-path", "Path to the generated asset index file.")
+    @transient
     val indexWriter = TaskKey[Map[String, String] => String]("digest-index-writer", "Function that writes the asset index.")
   }
 
@@ -33,7 +38,7 @@ object SbtDigest extends AutoPlugin {
   import autoImport._
   import DigestKeys._
 
-  override def projectSettings: Seq[Setting[_]] = Seq(
+  override def projectSettings: Seq[Setting[?]] = Seq(
     algorithms := Seq("md5"),
     indexPath := None,
     indexWriter := writeJsIndex,
@@ -49,6 +54,7 @@ object SbtDigest extends AutoPlugin {
     val target = webTarget.value / digest.key.label
     val path = indexPath.value
     val writer = indexWriter.value
+    implicit val conv: FileConverter = fileConverter.value
 
     mappings => DigestStage.run(mappings, algs, inc, exc, target, path, writer)
   }
@@ -89,7 +95,7 @@ object SbtDigest extends AutoPlugin {
     }
 
     case class Undigested(mapping: PathMapping) extends DigestOutput {
-      val originalPath: String = mapping.path
+      val originalPath: String = mapping._2
       val mappings: Seq[PathMapping] = Seq(mapping)
     }
 
@@ -104,7 +110,7 @@ object SbtDigest extends AutoPlugin {
       targetDir: File,
       indexPathOpt: Option[String],
       indexWriter: Map[String, String] => String
-    ): Seq[PathMapping] = {
+    )(implicit conv: FileConverter): Seq[PathMapping] = {
       val processed = process(mappings, algorithms, include, exclude, targetDir)
       val digested = indexPathOpt.fold(processed) { indexPath =>
         // generate an index file and add to digested outputs
@@ -112,13 +118,13 @@ object SbtDigest extends AutoPlugin {
         val filtered = processed filterNot (_.originalPath == indexPath)
         val indexMap = (filtered flatMap {
           case Digested(_, _, versioned) =>
-            versioned.headOption map { v => normalizePath(v.originalPath) -> normalizePath(v.mapping.path) }
+            versioned.headOption map { v => normalizePath(v.originalPath) -> normalizePath(v.mapping._2) }
           case _ => None
         }).toMap
         val indexContent = indexWriter(indexMap)
         val indexFile = targetDir / indexPath
         IO.write(indexFile, indexContent)
-        val digestedIndex = process(Seq(indexFile -> indexPath), algorithms, include, exclude, targetDir)
+        val digestedIndex = process(Seq(PluginCompat.toFileRef(indexFile) -> indexPath), algorithms, include, exclude, targetDir)
         filtered ++ digestedIndex
       }
       digested flatMap (_.mappings)
@@ -127,15 +133,15 @@ object SbtDigest extends AutoPlugin {
     /**
      * Group together digest-related mappings and create any missing checksums or versioned mappings for each path.
      */
-    def process(mappings: Seq[PathMapping], algorithms: Seq[String], include: FileFilter, exclude: FileFilter, targetDir: File): Seq[DigestOutput] = {
-      val (ignored, filtered) = mappings partition { case (file, path) => file.isDirectory }
-      val undigested  = ignored map Undigested
+    def process(mappings: Seq[PathMapping], algorithms: Seq[String], include: FileFilter, exclude: FileFilter, targetDir: File)(implicit conv: FileConverter): Seq[DigestOutput] = {
+      val (ignored, filtered) = mappings.partition { case (file, _) => PluginCompat.toFile(file).isDirectory }
+      val undigested  = ignored.map(Undigested.apply)
       val categorised = categorise(filtered, DigestAlgorithms)
       val grouped     = (categorised groupBy (_.originalPath)).toSeq
       val digested = grouped map {
         case (path, digestMappings) =>
           val original          = (digestMappings collect { case o: OriginalMapping => o }).headOption
-          val originalFile      = original map { _.mapping.file } filter { file => include.accept(file) && !exclude.accept(file) }
+          val originalFile      = original.map { mapping => PluginCompat.toFile(mapping.mapping._1) }.filter { file => include.accept(file) && !exclude.accept(file) }
           val existingChecksums = digestMappings collect { case c: ChecksumMapping => c }
           val missingChecksums  = algorithms diff (existingChecksums map (_.algorithm))
           val newChecksums      = missingChecksums flatMap { algorithm => originalFile.map(file => generateChecksum(file, path, algorithm, targetDir)) }
@@ -153,7 +159,7 @@ object SbtDigest extends AutoPlugin {
      * Categorise each mapping as original, checksum, or versioned.
      * Extract the original path, checksum, and algorithm.
      */
-    def categorise(mappings: Seq[PathMapping], algorithms: Seq[String]): Seq[DigestMapping] = {
+    def categorise(mappings: Seq[PathMapping], algorithms: Seq[String])(implicit conv: FileConverter): Seq[DigestMapping] = {
       mappings map { mapping =>
         checksumMapping(mapping, algorithms) orElse
         versionedMapping(mapping, algorithms) getOrElse
@@ -165,18 +171,18 @@ object SbtDigest extends AutoPlugin {
      * Create a digest mapping for an original file.
      */
     def originalMapping(mapping: PathMapping): OriginalMapping = {
-      OriginalMapping(mapping.path, mapping)
+      OriginalMapping(mapping._2, mapping)
     }
 
     /**
      * Check whether a mapping is for a checksum file.
      */
-    def checksumMapping(mapping: PathMapping, algorithms: Seq[String]): Option[ChecksumMapping] = {
+    def checksumMapping(mapping: PathMapping, algorithms: Seq[String])(implicit conv: FileConverter): Option[ChecksumMapping] = {
       val (file, path) = mapping
       val (base, name, ext) = splitPath(path)
       algorithms find ext.equals map { algorithm =>
         val original = buildPath(base, name, "")
-        val checksum = IO.read(file)
+        val checksum = IO.read(PluginCompat.toFile(file))
         ChecksumMapping(original, algorithm, checksum, mapping)
       }
     }
@@ -184,12 +190,12 @@ object SbtDigest extends AutoPlugin {
     /**
      * Create a checksum file and mapping.
      */
-    def generateChecksum(file: File, path: String, algorithm: String, targetDir: File): ChecksumMapping = {
+    def generateChecksum(file: File, path: String, algorithm: String, targetDir: File)(implicit conv: FileConverter): ChecksumMapping = {
       val checksum     = computeChecksum(file, algorithm)
       val checksumPath = path + "." + algorithm
       val checksumFile = targetDir / checksumPath
       IO.write(checksumFile, checksum)
-      ChecksumMapping(path, algorithm, checksum, checksumFile -> checksumPath)
+      ChecksumMapping(path, algorithm, checksum, PluginCompat.toFileRef(checksumFile) -> checksumPath)
     }
 
     /**
@@ -207,9 +213,9 @@ object SbtDigest extends AutoPlugin {
     /**
      * Check whether a mapping is for a versioned file.
      */
-    def versionedMapping(mapping: PathMapping, algorithms: Seq[String]): Option[VersionedMapping] = {
+    def versionedMapping(mapping: PathMapping, algorithms: Seq[String])(implicit conv: FileConverter): Option[VersionedMapping] = {
       val (file, path) = mapping
-      val checksums = algorithms map { a => (a, computeChecksum(file, a)) }
+      val checksums = algorithms.map { a => (a, computeChecksum(PluginCompat.toFile(file), a)) }
       checksums find { case (_, checksum) => isVersioned(path, checksum) } map {
         case (algorithm, checksum) =>
           val original = unversioned(path, checksum)
@@ -220,13 +226,13 @@ object SbtDigest extends AutoPlugin {
     /**
      * Create a versioned mapping with the checksum in the name.
      */
-    def generateVersioned(file: File, path: String, algorithm: String, targetDir: File): VersionedMapping = {
+    def generateVersioned(file: File, path: String, algorithm: String, targetDir: File)(implicit conv: FileConverter): VersionedMapping = {
       val checksum = computeChecksum(file, algorithm)
       val versionedPath = versioned(path, checksum)
       val versionedFile = targetDir / versionedPath
       // need to copy the file, otherwise packaging won't include both files
       IO.copyFile(file, versionedFile)
-      VersionedMapping(path, algorithm, checksum, versionedFile -> versionedPath)
+      VersionedMapping(path, algorithm, checksum, PluginCompat.toFileRef(versionedFile) -> versionedPath)
     }
 
     /**
@@ -285,14 +291,6 @@ object SbtDigest extends AutoPlugin {
      */
     def normalizePath(path: String, separator: Char = java.io.File.separatorChar): String = {
       if (separator == '/') path else path.replace(separator, '/')
-    }
-
-    /**
-     * Access PathMapping file and path with named methods.
-     */
-    implicit class PathMappingAccessors(mapping: (File, String)) {
-      def file: File = mapping._1
-      def path: String = mapping._2
     }
   }
 

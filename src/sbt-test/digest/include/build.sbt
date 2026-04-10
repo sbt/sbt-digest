@@ -1,10 +1,12 @@
 val root = (project in file(".")).enablePlugins(SbtWeb)
 
+target := baseDirectory.value / "target"
+
 pipelineStages := Seq(digest)
 
 // set an include filter for js files only
 
-includeFilter in digest := "*.js"
+digest / includeFilter := "*.js"
 
 // for checking that the produced pipeline mappings are correct
 
