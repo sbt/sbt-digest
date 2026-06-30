@@ -21,7 +21,7 @@ addSbtJsEngine("1.4.0-M4")
 pluginCrossBuild / sbtVersion := {
   scalaBinaryVersion.value match {
     case "2.12" => "1.12.9"
-    case _      => "2.0.0-RC11"
+    case _      => "2.0.1"
   }
 }
 
