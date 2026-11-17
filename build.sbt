@@ -1,6 +1,7 @@
 lazy val scala212 = "2.12.21"
-lazy val scala3 = "3.8.4"
+lazy val scala3 = "3.9.0"
 
+ThisBuild / scalaVersion := scala212
 ThisBuild / crossScalaVersions := Seq(scala212, scala3)
 
 lazy val `sbt-digest` = project in file(".")
@@ -21,7 +22,7 @@ addSbtJsEngine("1.4.0-M4")
 pluginCrossBuild / sbtVersion := {
   scalaBinaryVersion.value match {
     case "2.12" => "1.12.9"
-    case _      => "2.0.1"
+    case _      => "2.1.0"
   }
 }
 
