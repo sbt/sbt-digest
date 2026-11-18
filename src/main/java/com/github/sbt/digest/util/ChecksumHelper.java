@@ -17,18 +17,17 @@
  */
 package com.github.sbt.digest.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.ivy.util.FileUtil;
 
 public final class ChecksumHelper {
 
@@ -79,8 +78,7 @@ public final class ChecksumHelper {
 	 *			 if an IO problem occur while reading files or if the checksum is not compliant
 	 */
 	public static void check(File dest, File checksumFile, String algorithm) throws IOException {
-		String csFileContent = FileUtil
-				.readEntirely(new BufferedReader(new FileReader(checksumFile))).trim()
+		String csFileContent = new String(Files.readAllBytes(checksumFile.toPath()), Charset.defaultCharset()).trim()
 				.toLowerCase(Locale.US);
 		String expected;
 		if (csFileContent.indexOf(' ') > -1

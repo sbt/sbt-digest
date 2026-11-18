@@ -22,3 +22,7 @@ checkMappings := {
   val paths = (mappings map (_._2)).toSet
   if (paths != expected) sys.error(s"Expected $expected but pipeline paths are $paths")
 }
+
+ThisBuild / scalaVersion := {
+  if (sbtVersion.value.startsWith("1.")) "2.12.21" else "3.9.0"
+}
